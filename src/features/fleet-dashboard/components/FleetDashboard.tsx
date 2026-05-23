@@ -35,6 +35,7 @@ const emptyEntriesBySection = (): FleetEntriesBySection =>
 
 export function FleetDashboard() {
   const entries = useQuery(api.fleetEntries.list);
+  const highlight = useQuery(api.kioskHighlight.get);
   const [now, setNow] = useState(() => new Date());
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -80,7 +81,11 @@ export function FleetDashboard() {
   const renderEntries = (section: FleetSectionId) => (
     <div className="grid content-start gap-3">
       {entriesBySection[section].map((entry) => (
-        <FleetEntryCard entry={entry} key={entry._id} />
+        <FleetEntryCard
+          entry={entry}
+          isHighlighted={entry._id === highlight?.highlightedEntryId}
+          key={entry._id}
+        />
       ))}
     </div>
   );
