@@ -40,17 +40,45 @@ const groupedEntries = (entries: Doc<"fleetEntries">[]) =>
 
 export function FleetAdmin() {
   const entries = useQuery(api.fleetEntries.list);
+  const highlight = useQuery(api.kioskHighlight.get);
   const createEntry = useMutation(api.fleetEntries.create);
   const updateEntry = useMutation(api.fleetEntries.update);
   const deleteEntry = useMutation(api.fleetEntries.deleteEntry);
+  const setHighlight = useMutation(api.kioskHighlight.set);
+  const clearHighlight = useMutation(api.kioskHighlight.clear);
 
   const [form, setForm] = useState<FleetEntryFormState>(initialFormState);
   const [editingId, setEditingId] = useState<Id<"fleetEntries"> | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredEntries = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    const allEntries = entries ?? [];
+
+    if (!normalizedQuery) {
+      return allEntries;
+    }
+
+    return allEntries.filter((entry) => {
+      const sectionTitle = fleetSectionTitles[entry.section];
+      const searchableText = [
+        entry.unitNumber,
+        entry.personName,
+        entry.section,
+        sectionTitle,
+        entry.notes ?? "",
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return searchableText.includes(normalizedQuery);
+    });
+  }, [entries, searchQuery]);
 
   const entriesBySection = useMemo(
-    () => groupedEntries(entries ?? []),
-    [entries],
+    () => groupedEntries(filteredEntries),
+    [filteredEntries],
   );
 
   const updateField = <Field extends keyof FleetEntryFormState>(
@@ -108,12 +136,43 @@ export function FleetAdmin() {
       resetForm();
     }
 
+    if (highlight?.highlightedEntryId === id) {
+      await clearHighlight();
+    }
+
     await deleteEntry({ id });
   };
 
   return (
     <main className="h-screen overflow-auto bg-white p-8 text-black">
       <div className="mx-auto grid max-w-7xl gap-8 xl:grid-cols-[24rem_1fr]">
+        <section className="border-[3px] border-black p-5 xl:col-span-2">
+          <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
+            <label className="grid gap-2 text-sm font-black uppercase">
+              Search Fleet Entries
+              <input
+                className="border-[3px] border-black px-4 py-3 text-lg font-bold"
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Unit, person, section, or notes"
+                value={searchQuery}
+              />
+            </label>
+            <div className="flex items-center gap-3">
+              <p className="text-sm font-black uppercase text-zinc-600">
+                {filteredEntries.length} shown / {(entries ?? []).length} total
+              </p>
+              <button
+                className="border-[3px] border-black bg-white px-4 py-3 text-sm font-black uppercase text-black disabled:opacity-50"
+                disabled={!highlight?.highlightedEntryId}
+                onClick={() => clearHighlight()}
+                type="button"
+              >
+                Clear Highlight
+              </button>
+            </div>
+          </div>
+        </section>
+
         <section className="border-[3px] border-black p-5">
           <h1 className="text-3xl font-black uppercase">Fleet Admin</h1>
           <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
@@ -215,7 +274,11 @@ export function FleetAdmin() {
                 {entriesBySection[section.id].length > 0 ? (
                   entriesBySection[section.id].map((entry) => (
                     <article
-                      className="grid gap-3 border-[3px] border-black p-4 md:grid-cols-[1fr_auto]"
+                      className={`grid gap-3 border-[3px] p-4 md:grid-cols-[1fr_auto] ${
+                        highlight?.highlightedEntryId === entry._id
+                          ? "border-yellow-500 bg-yellow-50 shadow-[0_0_0_4px_#facc15]"
+                          : "border-black bg-white"
+                      }`}
                       key={entry._id}
                     >
                       <div>
@@ -235,6 +298,13 @@ export function FleetAdmin() {
                         ) : null}
                       </div>
                       <div className="flex items-start gap-2">
+                        <button
+                          className="border-[3px] border-black bg-yellow-300 px-3 py-2 text-sm font-black uppercase text-black"
+                          onClick={() => setHighlight({ entryId: entry._id })}
+                          type="button"
+                        >
+                          Highlight
+                        </button>
                         <button
                           className="border-[3px] border-black px-3 py-2 text-sm font-black uppercase"
                           onClick={() => startEditing(entry)}

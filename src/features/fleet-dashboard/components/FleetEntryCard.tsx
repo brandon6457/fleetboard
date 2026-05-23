@@ -3,6 +3,7 @@ import { fleetStatusTitles } from "../data/sections";
 
 type FleetEntryCardProps = {
   entry: Doc<"fleetEntries">;
+  isHighlighted?: boolean;
 };
 
 const statusStyles: Record<Doc<"fleetEntries">["status"], string> = {
@@ -19,9 +20,18 @@ const statusAccentStyles: Record<Doc<"fleetEntries">["status"], string> = {
   shop: "bg-zinc-800",
 };
 
-export function FleetEntryCard({ entry }: FleetEntryCardProps) {
+export function FleetEntryCard({
+  entry,
+  isHighlighted = false,
+}: FleetEntryCardProps) {
   return (
-    <article className="grid grid-cols-[0.45rem_1fr] border-[3px] border-black bg-white leading-tight shadow-[3px_3px_0_#000]">
+    <article
+      className={`grid grid-cols-[0.45rem_1fr] border-[3px] bg-white leading-tight ${
+        isHighlighted
+          ? "border-yellow-400 outline outline-[6px] outline-yellow-300 shadow-[0_0_0_6px_#facc15,0_0_28px_12px_rgba(250,204,21,0.8)]"
+          : "border-black shadow-[3px_3px_0_#000]"
+      }`}
+    >
       <div className={statusAccentStyles[entry.status]} aria-hidden="true" />
       <div className="p-3">
         <div className="flex items-start justify-between gap-3">

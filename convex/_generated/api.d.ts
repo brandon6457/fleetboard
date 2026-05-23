@@ -9,6 +9,7 @@
  */
 
 import type * as fleetEntries from "../fleetEntries.js";
+import type * as kioskHighlight from "../kioskHighlight.js";
 
 import type {
   ApiFromModules,
@@ -18,6 +19,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   fleetEntries: typeof fleetEntries;
+  kioskHighlight: typeof kioskHighlight;
 }>;
 
 /**

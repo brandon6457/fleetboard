@@ -31,4 +31,9 @@ export default defineSchema({
     .index("by_section", ["section"])
     .index("by_status", ["status"])
     .index("by_section_and_status", ["section", "status"]),
+  kioskHighlights: defineTable({
+    key: v.string(),
+    highlightedEntryId: v.optional(v.id("fleetEntries")),
+    updatedAt: v.number(),
+  }).index("by_key", ["key"]),
 });
