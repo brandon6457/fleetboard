@@ -1,0 +1,13 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Down to Earth Fleet Management</title>
+  <desc id="desc">A branded fleet board icon with Down to Earth colors.</desc>
+  <rect width="512" height="512" fill="#ffffff"/>
+  <rect x="36" y="36" width="440" height="440" fill="#ffffff" stroke="#000000" stroke-width="18"/>
+  <path d="M102 180h214c38 0 68 30 68 68v86H102V180Z" fill="#ffffff" stroke="#004987" stroke-width="20" stroke-linejoin="round"/>
+  <path d="M384 260h46c22 0 40 18 40 40v34h-86v-74Z" fill="#ffffff" stroke="#004987" stroke-width="20" stroke-linejoin="round"/>
+  <circle cx="168" cy="350" r="38" fill="#ffffff" stroke="#000000" stroke-width="18"/>
+  <circle cx="384" cy="350" r="38" fill="#ffffff" stroke="#000000" stroke-width="18"/>
+  <path d="M145 122c26-36 68-58 113-58 52 0 99 29 123 75" fill="none" stroke="#158f44" stroke-width="18" stroke-linecap="round"/>
+  <path d="M176 124c18-18 48-28 82-28 35 0 66 11 85 31" fill="none" stroke="#158f44" stroke-width="14" stroke-linecap="round"/>
+  <text x="256" y="447" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="900" fill="#004987">FLEET</text>
+</svg>
