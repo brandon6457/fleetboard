@@ -67,6 +67,7 @@ export function FleetDashboard() {
     return grouped;
   }, [entries]);
 
+  const isLoadingEntries = entries === undefined;
   const totalVehicles = entries?.length ?? 0;
 
   const toggleFullscreen = async () => {
@@ -78,17 +79,27 @@ export function FleetDashboard() {
     await document.documentElement.requestFullscreen();
   };
 
-  const renderEntries = (section: FleetSectionId) => (
-    <div className="grid content-start gap-3">
-      {entriesBySection[section].map((entry) => (
-        <FleetEntryCard
-          entry={entry}
-          isHighlighted={entry._id === highlight?.highlightedEntryId}
-          key={entry._id}
-        />
-      ))}
-    </div>
-  );
+  const renderEntries = (section: FleetSectionId) => {
+    if (isLoadingEntries) {
+      return (
+        <p className="border-[3px] border-dashed border-zinc-300 p-3 text-center text-sm font-black uppercase text-zinc-500">
+          Loading entries
+        </p>
+      );
+    }
+
+    return (
+      <div className="grid content-start gap-3">
+        {entriesBySection[section].map((entry) => (
+          <FleetEntryCard
+            entry={entry}
+            isHighlighted={entry._id === highlight?.highlightedEntryId}
+            key={entry._id}
+          />
+        ))}
+      </div>
+    );
+  };
 
   return (
     <main className="flex h-screen min-h-[680px] flex-col overflow-hidden border-[4px] border-zinc-300 bg-white p-2 text-black shadow-[inset_0_0_10px_rgba(0,0,0,0.25)]">
@@ -115,7 +126,7 @@ export function FleetDashboard() {
               Total Vehicles
             </p>
             <p className="mt-2 text-5xl font-black leading-none text-black">
-              {totalVehicles}
+              {isLoadingEntries ? "..." : totalVehicles}
             </p>
           </div>
         </aside>

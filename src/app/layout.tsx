@@ -3,8 +3,17 @@ import { Providers } from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Fleet Management",
-  description: "Fleet management operations dashboard",
+  applicationName: "Down to Earth Fleet Management",
+  title: {
+    default: "Fleet Management | Down to Earth",
+    template: "%s | Down to Earth Fleet Management",
+  },
+  description: "Realtime fleet management dashboard for Down to Earth.",
+  icons: {
+    icon: "/app-icon.svg",
+    shortcut: "/app-icon.svg",
+    apple: "/app-icon.svg",
+  },
 };
 
 export default function RootLayout({
