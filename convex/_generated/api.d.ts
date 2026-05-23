@@ -8,13 +8,17 @@
  * @module
  */
 
+import type * as fleetEntries from "../fleetEntries.js";
+
 import type {
   ApiFromModules,
   FilterApi,
   FunctionReference,
 } from "convex/server";
 
-declare const fullApi: ApiFromModules<{}>;
+declare const fullApi: ApiFromModules<{
+  fleetEntries: typeof fleetEntries;
+}>;
 
 /**
  * A utility for referencing Convex functions in your app's public API.

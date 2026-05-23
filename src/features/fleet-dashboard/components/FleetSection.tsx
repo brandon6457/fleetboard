@@ -5,14 +5,14 @@ export type FleetSectionItem = {
 
 type FleetSectionProps = {
   title: string;
-  items: FleetSectionItem[];
+  items?: FleetSectionItem[];
   className?: string;
   children?: React.ReactNode;
 };
 
 export function FleetSection({
   title,
-  items,
+  items = [],
   className = "",
   children,
 }: FleetSectionProps) {
@@ -38,8 +38,8 @@ export function FleetSection({
             ))}
           </ul>
         ) : null}
+        {children}
       </div>
-      {children}
     </section>
   );
 }
