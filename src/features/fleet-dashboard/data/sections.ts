@@ -21,9 +21,7 @@ export const fleetSectionTitles: Record<FleetSectionId, string> =
 
 export const fleetStatuses = [
   { id: "active", title: "Active" },
-  { id: "maintenance", title: "Maintenance" },
   { id: "backup", title: "Backup" },
-  { id: "shop", title: "Shop" },
 ] as const;
 
 export type FleetStatus = (typeof fleetStatuses)[number]["id"];
