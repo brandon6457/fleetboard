@@ -40,7 +40,7 @@ const entryMatchesSearch = (entry: Doc<"fleetEntries">, query?: string) => {
     return false;
   }
 
-  return [entry.unitNumber, entry.personName].some((value) =>
+  return [entry.unitNumber, entry.personName ?? ""].some((value) =>
     value.toLowerCase().includes(normalizedQuery),
   );
 };

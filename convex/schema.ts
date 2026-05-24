@@ -19,8 +19,9 @@ export const fleetStatusValidator = v.union(
 export default defineSchema({
   fleetEntries: defineTable({
     unitNumber: v.string(),
-    personName: v.string(),
+    personName: v.optional(v.string()),
     section: fleetSectionValidator,
+    // Deprecated: retained until existing documents have been migrated.
     notes: v.optional(v.string()),
     status: fleetStatusValidator,
     createdAt: v.number(),

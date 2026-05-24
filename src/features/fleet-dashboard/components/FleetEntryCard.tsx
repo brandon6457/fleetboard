@@ -24,6 +24,7 @@ export function FleetEntryCard({
   isHighlighted = false,
 }: FleetEntryCardProps) {
   const textStyles = statusTextStyles[entry.status];
+  const personName = entry.personName?.trim();
 
   return (
     <article
@@ -41,17 +42,14 @@ export function FleetEntryCard({
         >
           {entry.unitNumber}
         </span>
-        <span
-          className={`min-w-0 truncate text-[clamp(0.95rem,1vw,1.2rem)] font-black ${textStyles.personName}`}
-        >
-          {entry.personName}
-        </span>
+        {personName ? (
+          <span
+            className={`min-w-0 truncate text-[clamp(0.95rem,1vw,1.2rem)] font-black ${textStyles.personName}`}
+          >
+            {personName}
+          </span>
+        ) : null}
       </p>
-      {entry.notes ? (
-        <p className="mt-1 truncate text-sm font-semibold leading-snug text-zinc-600">
-          {entry.notes}
-        </p>
-      ) : null}
     </article>
   );
 }

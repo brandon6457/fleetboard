@@ -17,7 +17,6 @@ type FleetEntryFormState = {
   unitNumber: string;
   personName: string;
   section: FleetSectionId;
-  notes: string;
   status: FleetStatus;
 };
 
@@ -25,7 +24,6 @@ const initialFormState: FleetEntryFormState = {
   unitNumber: "",
   personName: "",
   section: "SRQ_RKL",
-  notes: "",
   status: "active",
 };
 
@@ -45,7 +43,7 @@ const entryMatchesSearch = (entry: Doc<"fleetEntries">, query: string) => {
     return false;
   }
 
-  return [entry.unitNumber, entry.personName].some((value) =>
+  return [entry.unitNumber, entry.personName ?? ""].some((value) =>
     value.toLowerCase().includes(normalizedQuery),
   );
 };
@@ -106,9 +104,8 @@ export function FleetAdmin() {
     setEditingId(entry._id);
     setForm({
       unitNumber: entry.unitNumber,
-      personName: entry.personName,
+      personName: entry.personName ?? "",
       section: entry.section,
-      notes: entry.notes ?? "",
       status: entry.status,
     });
 
@@ -128,9 +125,8 @@ export function FleetAdmin() {
 
     const payload = {
       unitNumber: form.unitNumber,
-      personName: form.personName,
+      personName: form.personName || undefined,
       section: form.section,
-      notes: form.notes || undefined,
       status: form.status,
     };
 
@@ -262,7 +258,6 @@ export function FleetAdmin() {
                 onChange={(event) =>
                   updateField("personName", event.target.value)
                 }
-                required
                 value={form.personName}
               />
             </label>
@@ -299,15 +294,6 @@ export function FleetAdmin() {
                   </option>
                 ))}
               </select>
-            </label>
-
-            <label className="grid gap-2 text-sm font-black uppercase">
-              Notes
-              <textarea
-                className="min-h-28 resize-y border-[3px] border-black px-3 py-2 text-base font-bold"
-                onChange={(event) => updateField("notes", event.target.value)}
-                value={form.notes}
-              />
             </label>
 
             <div className="flex gap-3">
@@ -356,17 +342,14 @@ export function FleetAdmin() {
                         <p className="text-xl font-black uppercase">
                           {entry.unitNumber}
                         </p>
-                        <p className="mt-1 font-bold uppercase">
-                          {entry.personName}
-                        </p>
+                        {entry.personName ? (
+                          <p className="mt-1 font-bold uppercase">
+                            {entry.personName}
+                          </p>
+                        ) : null}
                         <p className="mt-2 text-sm font-black uppercase text-zinc-600">
                           {fleetStatusTitles[entry.status]}
                         </p>
-                        {entry.notes ? (
-                          <p className="mt-2 font-semibold text-zinc-700">
-                            {entry.notes}
-                          </p>
-                        ) : null}
                       </div>
                       <div className="flex items-start gap-2">
                         <button
