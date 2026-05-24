@@ -26,13 +26,15 @@ export function FleetEntryCard({
   const textStyles = statusTextStyles[entry.status];
 
   return (
-    <article className="leading-tight">
+    <article
+      className={`leading-tight ${
+        isHighlighted
+          ? "-mx-2 bg-[#FFD400] px-2 py-1.5 shadow-[0_0_18px_rgba(255,212,0,0.8)]"
+          : ""
+      }`}
+    >
       <p
-        className={`inline-flex max-w-full flex-row items-baseline gap-2 overflow-hidden whitespace-nowrap uppercase leading-none ${
-          isHighlighted
-            ? "decoration-yellow-300 decoration-[6px] underline underline-offset-[-2px] [text-shadow:0_0_12px_rgba(250,204,21,0.95),0_0_2px_#facc15]"
-            : ""
-        }`}
+        className="inline-flex max-w-full flex-row items-baseline gap-2 overflow-hidden whitespace-nowrap uppercase leading-none"
       >
         <span
           className={`shrink-0 text-[clamp(1.25rem,1.45vw,2rem)] font-black ${textStyles.unitNumber}`}
