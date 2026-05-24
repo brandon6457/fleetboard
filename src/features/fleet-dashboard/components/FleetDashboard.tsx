@@ -102,7 +102,7 @@ export function FleetDashboard() {
     }
 
     return (
-      <div className="grid content-start gap-1.5">
+      <div className="grid content-start gap-1">
         {entriesBySection[section].map((entry) => (
           <FleetEntryCard
             entry={entry}
