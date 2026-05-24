@@ -103,9 +103,9 @@ export function FleetDashboard() {
 
     if (section === "SW_MAIN") {
       return (
-        <div className="h-full columns-2 gap-x-8 overflow-hidden [column-fill:auto]">
+        <div className="h-full columns-3 gap-x-4 overflow-hidden [column-fill:auto] 2xl:columns-4">
           {entriesBySection[section].map((entry) => (
-            <div className="mb-1 break-inside-avoid" key={entry._id}>
+            <div className="mb-0.5 break-inside-avoid" key={entry._id}>
               <FleetEntryCard
                 entry={entry}
                 isHighlighted={entryMatchesSearch(
