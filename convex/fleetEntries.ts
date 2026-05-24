@@ -10,7 +10,7 @@ const cleanOptionalString = (value?: string) => {
 export const list = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("fleetEntries").order("asc").take(500);
+    return await ctx.db.query("fleetEntries").order("asc").collect();
   },
 });
 

@@ -101,6 +101,24 @@ export function FleetDashboard() {
       );
     }
 
+    if (section === "SW_MAIN") {
+      return (
+        <div className="h-full columns-2 gap-x-8 overflow-hidden [column-fill:auto]">
+          {entriesBySection[section].map((entry) => (
+            <div className="mb-1 break-inside-avoid" key={entry._id}>
+              <FleetEntryCard
+                entry={entry}
+                isHighlighted={entryMatchesSearch(
+                  entry,
+                  highlightedSearchQuery,
+                )}
+              />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
     return (
       <div className="grid content-start gap-1">
         {entriesBySection[section].map((entry) => (
