@@ -11,6 +11,13 @@ import type { FleetSectionId } from "../data/sections";
 import { fleetSectionTitles, fleetSections } from "../data/sections";
 
 type FleetEntriesBySection = Record<FleetSectionId, Doc<"fleetEntries">[]>;
+type SectionStatusCounts = Record<
+  FleetSectionId,
+  {
+    active: number;
+    backup: number;
+  }
+>;
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   weekday: "short",
@@ -24,6 +31,16 @@ const timeFormatter = new Intl.DateTimeFormat("en-US", {
   minute: "2-digit",
 });
 
+const unitNumberCollator = new Intl.Collator("en-US", {
+  numeric: true,
+  sensitivity: "base",
+});
+
+const statusSortOrder: Record<Doc<"fleetEntries">["status"], number> = {
+  active: 0,
+  backup: 1,
+};
+
 const emptyEntriesBySection = (): FleetEntriesBySection =>
   fleetSections.reduce(
     (grouped, section) => ({
@@ -32,6 +49,35 @@ const emptyEntriesBySection = (): FleetEntriesBySection =>
     }),
     {} as FleetEntriesBySection,
   );
+
+const emptySectionStatusCounts = (): SectionStatusCounts =>
+  fleetSections.reduce(
+    (counts, section) => ({
+      ...counts,
+      [section.id]: {
+        active: 0,
+        backup: 0,
+      },
+    }),
+    {} as SectionStatusCounts,
+  );
+
+const sortFleetEntries = (
+  firstEntry: Doc<"fleetEntries">,
+  secondEntry: Doc<"fleetEntries">,
+) => {
+  const statusComparison =
+    statusSortOrder[firstEntry.status] - statusSortOrder[secondEntry.status];
+
+  if (statusComparison !== 0) {
+    return statusComparison;
+  }
+
+  return unitNumberCollator.compare(
+    firstEntry.unitNumber,
+    secondEntry.unitNumber,
+  );
+};
 
 const entryMatchesSearch = (entry: Doc<"fleetEntries">, query?: string) => {
   const normalizedQuery = query?.trim().toLowerCase();
@@ -76,7 +122,21 @@ export function FleetDashboard() {
       grouped[entry.section].push(entry);
     }
 
+    for (const section of fleetSections) {
+      grouped[section.id].sort(sortFleetEntries);
+    }
+
     return grouped;
+  }, [entries]);
+
+  const sectionStatusCounts = useMemo(() => {
+    const counts = emptySectionStatusCounts();
+
+    for (const entry of entries ?? []) {
+      counts[entry.section][entry.status] += 1;
+    }
+
+    return counts;
   }, [entries]);
 
   const isLoadingEntries = entries === undefined;
@@ -166,6 +226,7 @@ export function FleetDashboard() {
       <div className="mt-1 grid min-h-0 flex-1 grid-cols-[1.05fr_1.52fr_1.12fr_2.42fr] gap-[3px] bg-black p-[3px]">
         <FleetSection
           count={entriesBySection.SRQ_RKL.length}
+          statusCounts={sectionStatusCounts.SRQ_RKL}
           title={fleetSectionTitles.SRQ_RKL}
         >
           {renderEntries("SRQ_RKL")}
@@ -174,12 +235,14 @@ export function FleetDashboard() {
         <div className="grid min-h-0 grid-rows-[72fr_28fr] gap-[3px] bg-black">
           <FleetSection
             count={entriesBySection.TAMPA.length}
+            statusCounts={sectionStatusCounts.TAMPA}
             title={fleetSectionTitles.TAMPA}
           >
             {renderEntries("TAMPA")}
           </FleetSection>
           <FleetSection
             count={entriesBySection.SRQ_BACKUP.length}
+            statusCounts={sectionStatusCounts.SRQ_BACKUP}
             title={fleetSectionTitles.SRQ_BACKUP}
           >
             {renderEntries("SRQ_BACKUP")}
@@ -189,12 +252,14 @@ export function FleetDashboard() {
         <div className="grid min-h-0 grid-rows-[1fr_2fr] gap-[3px] bg-black">
           <FleetSection
             count={entriesBySection.SW_CON.length}
+            statusCounts={sectionStatusCounts.SW_CON}
             title={fleetSectionTitles.SW_CON}
           >
             {renderEntries("SW_CON")}
           </FleetSection>
           <FleetSection
             count={entriesBySection.WEST_CON.length}
+            statusCounts={sectionStatusCounts.WEST_CON}
             title={fleetSectionTitles.WEST_CON}
           >
             {renderEntries("WEST_CON")}
@@ -204,12 +269,14 @@ export function FleetDashboard() {
         <FleetSection
           className="relative"
           count={entriesBySection.SW_MAIN.length}
+          statusCounts={sectionStatusCounts.SW_MAIN}
           title={fleetSectionTitles.SW_MAIN}
         >
           {renderEntries("SW_MAIN")}
           <FleetSection
             className="absolute bottom-0 right-0 h-[28%] min-h-44 w-[53%] border-l-[3px] border-t-[3px] border-black"
             count={entriesBySection.SHOP.length}
+            statusCounts={sectionStatusCounts.SHOP}
             title={fleetSectionTitles.SHOP}
           >
             {renderEntries("SHOP")}
