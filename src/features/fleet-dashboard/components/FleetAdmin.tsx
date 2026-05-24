@@ -27,6 +27,21 @@ const initialFormState: FleetEntryFormState = {
   status: "active",
 };
 
+const panelClasses =
+  "border-[3px] border-zinc-700 bg-zinc-900 p-5 shadow-[0_0_0_1px_rgba(255,255,255,0.04)]";
+const labelClasses =
+  "grid gap-2 text-sm font-black uppercase tracking-wide text-zinc-200";
+const inputClasses =
+  "border-[3px] border-zinc-600 bg-zinc-950 px-3 py-2 text-base font-bold text-zinc-50 outline-none placeholder:text-zinc-500 hover:border-zinc-400 focus-visible:border-emerald-400 focus-visible:ring-4 focus-visible:ring-emerald-500/30";
+const textInputClasses = `${inputClasses} cursor-text`;
+const selectClasses = `${inputClasses} cursor-pointer appearance-none`;
+const primaryButtonClasses =
+  "cursor-pointer border-[3px] border-emerald-400 bg-emerald-400 px-4 py-3 font-black uppercase text-zinc-950 outline-none hover:border-emerald-300 hover:bg-emerald-300 focus-visible:ring-4 focus-visible:ring-emerald-400/40 disabled:cursor-not-allowed disabled:border-zinc-700 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:opacity-70";
+const secondaryButtonClasses =
+  "cursor-pointer border-[3px] border-zinc-500 bg-zinc-900 px-4 py-3 font-black uppercase text-zinc-100 outline-none hover:border-zinc-200 hover:bg-zinc-800 focus-visible:ring-4 focus-visible:ring-zinc-300/30 disabled:cursor-not-allowed disabled:border-zinc-700 disabled:bg-zinc-900 disabled:text-zinc-600 disabled:opacity-70";
+const dangerButtonClasses =
+  "cursor-pointer border-[3px] border-red-500 bg-red-500 px-3 py-2 text-sm font-black uppercase text-white outline-none hover:border-red-400 hover:bg-red-400 focus-visible:ring-4 focus-visible:ring-red-500/35";
+
 const groupedEntries = (entries: Doc<"fleetEntries">[]) =>
   fleetSections.reduce(
     (groups, section) => ({
@@ -175,18 +190,18 @@ export function FleetAdmin() {
   };
 
   return (
-    <main className="h-screen overflow-auto bg-white p-8 text-black">
+    <main className="h-screen overflow-auto bg-zinc-950 p-8 text-zinc-100">
       <div className="mx-auto grid max-w-7xl gap-8 xl:grid-cols-[24rem_1fr]">
-        <section className="border-[3px] border-black p-5 xl:col-span-2">
+        <section className={`${panelClasses} xl:col-span-2`}>
           <form
             className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end"
             onSubmit={handleSearchSubmit}
           >
-            <label className="grid gap-2 text-sm font-black uppercase">
+            <label className={labelClasses}>
               Search Fleet Entries
               <div className="grid grid-cols-[1fr_auto]">
                 <input
-                  className="min-w-0 border-[3px] border-r-0 border-black px-4 py-3 text-lg font-bold"
+                  className={`${textInputClasses} min-w-0 border-r-0 px-4 py-3 text-lg`}
                   onChange={(event) => {
                     setSearchQuery(event.target.value);
                     setSearchMessage("");
@@ -195,7 +210,7 @@ export function FleetAdmin() {
                   value={searchQuery}
                 />
                 <button
-                  className="border-[3px] border-black bg-black px-5 py-3 text-sm font-black uppercase text-white disabled:opacity-50"
+                  className={`${primaryButtonClasses} px-5 text-sm`}
                   disabled={isLoadingEntries}
                   type="submit"
                 >
@@ -204,14 +219,14 @@ export function FleetAdmin() {
               </div>
             </label>
             <div className="flex items-center gap-3">
-              <p className="text-sm font-black uppercase text-zinc-600">
+              <p className="text-sm font-black uppercase text-zinc-300">
                 {searchMessage ||
                 (isLoadingEntries
                   ? "Loading entries"
                   : `${entries.length} total entries`)}
               </p>
               <button
-                className="border-[3px] border-black bg-white px-4 py-3 text-sm font-black uppercase text-black disabled:opacity-50"
+                className={`${secondaryButtonClasses} text-sm`}
                 disabled={!hasHighlight}
                 onClick={handleClearHighlight}
                 type="button"
@@ -222,13 +237,15 @@ export function FleetAdmin() {
           </form>
         </section>
 
-        <section className="border-[3px] border-black p-5" ref={formSectionRef}>
-          <h1 className="text-3xl font-black uppercase">Fleet Admin</h1>
+        <section className={panelClasses} ref={formSectionRef}>
+          <h1 className="text-3xl font-black uppercase text-white">
+            Fleet Admin
+          </h1>
           <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
-            <label className="grid gap-2 text-sm font-black uppercase">
+            <label className={labelClasses}>
               Unit Number
               <input
-                className="border-[3px] border-black px-3 py-2 text-base font-bold"
+                className={textInputClasses}
                 onChange={(event) =>
                   updateField("unitNumber", event.target.value)
                 }
@@ -238,10 +255,10 @@ export function FleetAdmin() {
               />
             </label>
 
-            <label className="grid gap-2 text-sm font-black uppercase">
+            <label className={labelClasses}>
               Person Name
               <input
-                className="border-[3px] border-black px-3 py-2 text-base font-bold"
+                className={textInputClasses}
                 onChange={(event) =>
                   updateField("personName", event.target.value)
                 }
@@ -249,34 +266,42 @@ export function FleetAdmin() {
               />
             </label>
 
-            <label className="grid gap-2 text-sm font-black uppercase">
+            <label className={labelClasses}>
               Section
               <select
-                className="border-[3px] border-black bg-white px-3 py-2 text-base font-bold"
+                className={selectClasses}
                 onChange={(event) =>
                   updateField("section", event.target.value as FleetSectionId)
                 }
                 value={form.section}
               >
                 {fleetSections.map((section) => (
-                  <option key={section.id} value={section.id}>
+                  <option
+                    className="bg-zinc-950 text-zinc-100"
+                    key={section.id}
+                    value={section.id}
+                  >
                     {section.title}
                   </option>
                 ))}
               </select>
             </label>
 
-            <label className="grid gap-2 text-sm font-black uppercase">
+            <label className={labelClasses}>
               Status
               <select
-                className="border-[3px] border-black bg-white px-3 py-2 text-base font-bold"
+                className={selectClasses}
                 onChange={(event) =>
                   updateField("status", event.target.value as FleetStatus)
                 }
                 value={form.status}
               >
                 {fleetStatuses.map((status) => (
-                  <option key={status.id} value={status.id}>
+                  <option
+                    className="bg-zinc-950 text-zinc-100"
+                    key={status.id}
+                    value={status.id}
+                  >
                     {status.title}
                   </option>
                 ))}
@@ -285,7 +310,7 @@ export function FleetAdmin() {
 
             <div className="flex gap-3">
               <button
-                className="flex-1 border-[3px] border-black bg-black px-4 py-3 text-base font-black uppercase text-white disabled:opacity-60"
+                className={`${primaryButtonClasses} flex-1 text-base`}
                 disabled={isSaving}
                 type="submit"
               >
@@ -293,7 +318,7 @@ export function FleetAdmin() {
               </button>
               {editingId ? (
                 <button
-                  className="border-[3px] border-black px-4 py-3 text-base font-black uppercase"
+                  className={`${secondaryButtonClasses} text-base`}
                   onClick={resetForm}
                   type="button"
                 >
@@ -306,22 +331,22 @@ export function FleetAdmin() {
 
         <section className="grid gap-5">
           {fleetSections.map((section) => (
-            <div className="border-[3px] border-black p-4" key={section.id}>
-              <h2 className="text-2xl font-black uppercase">
+            <div className={panelClasses} key={section.id}>
+              <h2 className="text-2xl font-black uppercase text-white">
                 {fleetSectionTitles[section.id]}
               </h2>
               <div className="mt-4 grid gap-3">
                 {isLoadingEntries ? (
-                  <p className="border-[3px] border-dashed border-zinc-300 p-4 text-sm font-bold uppercase text-zinc-500">
+                  <p className="border-[3px] border-dashed border-zinc-700 bg-zinc-950 p-4 text-sm font-bold uppercase text-zinc-500">
                     Loading entries
                   </p>
                 ) : entriesBySection[section.id].length > 0 ? (
                   entriesBySection[section.id].map((entry) => (
                     <article
-                      className={`grid gap-3 border-[3px] p-4 md:grid-cols-[1fr_auto] ${
+                      className={`grid cursor-default gap-3 border-[3px] p-4 outline-none md:grid-cols-[1fr_auto] ${
                         entryMatchesSearch(entry, highlightedSearchQuery)
-                          ? "border-yellow-500 bg-yellow-50 shadow-[0_0_0_4px_#facc15]"
-                          : "border-black bg-white"
+                          ? "border-yellow-400 bg-yellow-300 text-zinc-950 shadow-[0_0_0_4px_#facc15] hover:bg-yellow-200"
+                          : "border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-zinc-400 hover:bg-zinc-800"
                       }`}
                       key={entry._id}
                     >
@@ -334,20 +359,26 @@ export function FleetAdmin() {
                             {entry.personName}
                           </p>
                         ) : null}
-                        <p className="mt-2 text-sm font-black uppercase text-zinc-600">
+                        <p
+                          className={`mt-2 text-sm font-black uppercase ${
+                            entryMatchesSearch(entry, highlightedSearchQuery)
+                              ? "text-zinc-800"
+                              : "text-zinc-400"
+                          }`}
+                        >
                           {fleetStatusTitles[entry.status]}
                         </p>
                       </div>
                       <div className="flex items-start gap-2">
                         <button
-                          className="border-[3px] border-black px-3 py-2 text-sm font-black uppercase"
+                          className={`${secondaryButtonClasses} px-3 py-2 text-sm`}
                           onClick={() => startEditing(entry)}
                           type="button"
                         >
                           Edit
                         </button>
                         <button
-                          className="border-[3px] border-black bg-black px-3 py-2 text-sm font-black uppercase text-white"
+                          className={dangerButtonClasses}
                           onClick={() => handleDelete(entry._id)}
                           type="button"
                         >
@@ -357,7 +388,7 @@ export function FleetAdmin() {
                     </article>
                   ))
                 ) : (
-                  <p className="border-[3px] border-dashed border-zinc-300 p-4 text-sm font-bold uppercase text-zinc-500">
+                  <p className="border-[3px] border-dashed border-zinc-700 bg-zinc-950 p-4 text-sm font-bold uppercase text-zinc-500">
                     No entries
                   </p>
                 )}
