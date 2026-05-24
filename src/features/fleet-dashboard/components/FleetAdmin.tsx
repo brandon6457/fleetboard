@@ -70,22 +70,9 @@ export function FleetAdmin() {
     highlightedSearchQuery.trim() || highlight?.highlightedEntryId,
   );
 
-  const filteredEntries = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-    const allEntries = entries ?? [];
-
-    if (!normalizedQuery) {
-      return allEntries;
-    }
-
-    return allEntries.filter((entry) =>
-      entryMatchesSearch(entry, normalizedQuery),
-    );
-  }, [entries, searchQuery]);
-
   const entriesBySection = useMemo(
-    () => groupedEntries(filteredEntries),
-    [filteredEntries],
+    () => groupedEntries(entries ?? []),
+    [entries],
   );
 
   const updateField = <Field extends keyof FleetEntryFormState>(
@@ -221,7 +208,7 @@ export function FleetAdmin() {
                 {searchMessage ||
                 (isLoadingEntries
                   ? "Loading entries"
-                  : `${filteredEntries.length} shown / ${entries.length} total`)}
+                  : `${entries.length} total entries`)}
               </p>
               <button
                 className="border-[3px] border-black bg-white px-4 py-3 text-sm font-black uppercase text-black disabled:opacity-50"
