@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import type { Doc, Id } from "../../../../convex/_generated/dataModel";
@@ -64,6 +64,8 @@ export function FleetAdmin() {
   const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchMessage, setSearchMessage] = useState("");
+  const formSectionRef = useRef<HTMLElement>(null);
+  const unitNumberInputRef = useRef<HTMLInputElement>(null);
   const isLoadingEntries = entries === undefined;
   const highlightedSearchQuery = highlight?.highlightedSearchQuery ?? "";
   const hasHighlight = Boolean(
@@ -109,6 +111,15 @@ export function FleetAdmin() {
       notes: entry.notes ?? "",
       status: entry.status,
     });
+
+    formSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+
+    window.setTimeout(() => {
+      unitNumberInputRef.current?.focus({ preventScroll: true });
+    }, 350);
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -228,7 +239,7 @@ export function FleetAdmin() {
           </form>
         </section>
 
-        <section className="border-[3px] border-black p-5">
+        <section className="border-[3px] border-black p-5" ref={formSectionRef}>
           <h1 className="text-3xl font-black uppercase">Fleet Admin</h1>
           <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
             <label className="grid gap-2 text-sm font-black uppercase">
@@ -238,6 +249,7 @@ export function FleetAdmin() {
                 onChange={(event) =>
                   updateField("unitNumber", event.target.value)
                 }
+                ref={unitNumberInputRef}
                 required
                 value={form.unitNumber}
               />
