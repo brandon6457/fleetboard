@@ -10,8 +10,8 @@ const statusTextStyles: Record<
   { unitNumber: string; personName: string }
 > = {
   active: {
-    unitNumber: "text-emerald-700",
-    personName: "text-emerald-700",
+    unitNumber: "text-green-700",
+    personName: "text-green-700",
   },
   backup: {
     unitNumber: "text-black",
@@ -30,7 +30,7 @@ export function FleetEntryCard({
     <article
       className={`leading-tight ${
         isHighlighted
-          ? "-mx-2 bg-[#FFD400] px-2 py-1.5 shadow-[0_0_18px_rgba(255,212,0,0.8)]"
+          ? "-mx-2 bg-[#FFD400] px-2 py-1 shadow-[0_0_18px_rgba(255,212,0,0.8)]"
           : ""
       }`}
     >
@@ -38,13 +38,13 @@ export function FleetEntryCard({
         className="inline-flex max-w-full flex-row items-baseline gap-2 overflow-hidden whitespace-nowrap uppercase leading-none"
       >
         <span
-          className={`shrink-0 text-[clamp(1.25rem,1.45vw,2rem)] font-black ${textStyles.unitNumber}`}
+          className={`shrink-0 text-[clamp(0.95rem,1.05vw,1.45rem)] font-black ${textStyles.unitNumber}`}
         >
           {entry.unitNumber}
         </span>
         {personName ? (
           <span
-            className={`min-w-0 truncate text-[clamp(0.95rem,1vw,1.2rem)] font-black ${textStyles.personName}`}
+            className={`min-w-0 truncate text-[clamp(0.82rem,0.85vw,1.05rem)] font-black ${textStyles.personName}`}
           >
             {personName}
           </span>
