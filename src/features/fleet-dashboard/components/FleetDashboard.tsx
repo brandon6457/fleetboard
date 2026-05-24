@@ -33,6 +33,18 @@ const emptyEntriesBySection = (): FleetEntriesBySection =>
     {} as FleetEntriesBySection,
   );
 
+const entryMatchesSearch = (entry: Doc<"fleetEntries">, query?: string) => {
+  const normalizedQuery = query?.trim().toLowerCase();
+
+  if (!normalizedQuery) {
+    return false;
+  }
+
+  return [entry.unitNumber, entry.personName].some((value) =>
+    value.toLowerCase().includes(normalizedQuery),
+  );
+};
+
 export function FleetDashboard() {
   const entries = useQuery(api.fleetEntries.list);
   const highlight = useQuery(api.kioskHighlight.get);
@@ -69,6 +81,7 @@ export function FleetDashboard() {
 
   const isLoadingEntries = entries === undefined;
   const totalVehicles = entries?.length ?? 0;
+  const highlightedSearchQuery = highlight?.highlightedSearchQuery;
 
   const toggleFullscreen = async () => {
     if (document.fullscreenElement) {
@@ -93,7 +106,7 @@ export function FleetDashboard() {
         {entriesBySection[section].map((entry) => (
           <FleetEntryCard
             entry={entry}
-            isHighlighted={entry._id === highlight?.highlightedEntryId}
+            isHighlighted={entryMatchesSearch(entry, highlightedSearchQuery)}
             key={entry._id}
           />
         ))}

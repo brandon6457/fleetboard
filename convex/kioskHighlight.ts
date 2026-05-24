@@ -13,20 +13,32 @@ export const get = query({
   },
 });
 
-export const set = mutation({
+export const setSearch = mutation({
   args: {
-    entryId: v.id("fleetEntries"),
+    searchQuery: v.string(),
   },
   handler: async (ctx, args) => {
+    const highlightedSearchQuery = args.searchQuery.trim();
     const now = Date.now();
     const existing = await ctx.db
       .query("kioskHighlights")
       .withIndex("by_key", (q) => q.eq("key", highlightKey))
       .unique();
 
+    if (!highlightedSearchQuery) {
+      if (existing) {
+        await ctx.db.replace(existing._id, {
+          key: highlightKey,
+          updatedAt: now,
+        });
+      }
+      return;
+    }
+
     if (existing) {
-      await ctx.db.patch(existing._id, {
-        highlightedEntryId: args.entryId,
+      await ctx.db.replace(existing._id, {
+        key: highlightKey,
+        highlightedSearchQuery,
         updatedAt: now,
       });
       return;
@@ -34,7 +46,7 @@ export const set = mutation({
 
     await ctx.db.insert("kioskHighlights", {
       key: highlightKey,
-      highlightedEntryId: args.entryId,
+      highlightedSearchQuery,
       updatedAt: now,
     });
   },

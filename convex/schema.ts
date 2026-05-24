@@ -32,6 +32,7 @@ export default defineSchema({
   kioskHighlights: defineTable({
     key: v.string(),
     highlightedEntryId: v.optional(v.id("fleetEntries")),
+    highlightedSearchQuery: v.optional(v.string()),
     updatedAt: v.number(),
   }).index("by_key", ["key"]),
 });
