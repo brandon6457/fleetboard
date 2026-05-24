@@ -79,6 +79,8 @@ const sortFleetEntries = (
   );
 };
 
+const swMainTopGridCount = 52;
+
 const entryMatchesSearch = (entry: Doc<"fleetEntries">, query?: string) => {
   const normalizedQuery = query?.trim().toLowerCase();
 
@@ -162,19 +164,55 @@ export function FleetDashboard() {
     }
 
     if (section === "SW_MAIN") {
+      const topEntries = entriesBySection[section].slice(0, swMainTopGridCount);
+      const lowerEntries = entriesBySection[section].slice(swMainTopGridCount);
+
       return (
-        <div className="grid h-full grid-cols-4 content-start gap-x-2 gap-y-px overflow-hidden">
-          {entriesBySection[section].map((entry) => (
-            <div className="min-w-0" key={entry._id}>
-              <FleetEntryCard
-                entry={entry}
-                isHighlighted={entryMatchesSearch(
-                  entry,
-                  highlightedSearchQuery,
-                )}
-              />
+        <div className="h-full overflow-hidden">
+          <div
+            className="grid content-start overflow-hidden"
+            style={{
+              columnGap: "8px",
+              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+              rowGap: "1px",
+            }}
+          >
+            {topEntries.map((entry) => (
+              <div className="min-w-0" key={entry._id}>
+                <FleetEntryCard
+                  density="compact"
+                  entry={entry}
+                  isHighlighted={entryMatchesSearch(
+                    entry,
+                    highlightedSearchQuery,
+                  )}
+                />
+              </div>
+            ))}
+          </div>
+          {lowerEntries.length > 0 ? (
+            <div
+              className="mt-px grid w-[45%] content-start overflow-hidden"
+              style={{
+                columnGap: "8px",
+                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                rowGap: "1px",
+              }}
+            >
+              {lowerEntries.map((entry) => (
+                <div className="min-w-0" key={entry._id}>
+                  <FleetEntryCard
+                    density="compact"
+                    entry={entry}
+                    isHighlighted={entryMatchesSearch(
+                      entry,
+                      highlightedSearchQuery,
+                    )}
+                  />
+                </div>
+              ))}
             </div>
-          ))}
+          ) : null}
         </div>
       );
     }
@@ -225,7 +263,6 @@ export function FleetDashboard() {
 
       <div className="mt-1 grid min-h-0 flex-1 grid-cols-[1.05fr_1.52fr_1.12fr_2.42fr] gap-[3px] bg-black p-[3px]">
         <FleetSection
-          count={entriesBySection.SRQ_RKL.length}
           statusCounts={sectionStatusCounts.SRQ_RKL}
           title={fleetSectionTitles.SRQ_RKL}
         >
@@ -234,14 +271,12 @@ export function FleetDashboard() {
 
         <div className="grid min-h-0 grid-rows-[72fr_28fr] gap-[3px] bg-black">
           <FleetSection
-            count={entriesBySection.TAMPA.length}
             statusCounts={sectionStatusCounts.TAMPA}
             title={fleetSectionTitles.TAMPA}
           >
             {renderEntries("TAMPA")}
           </FleetSection>
           <FleetSection
-            count={entriesBySection.SRQ_BACKUP.length}
             statusCounts={sectionStatusCounts.SRQ_BACKUP}
             title={fleetSectionTitles.SRQ_BACKUP}
           >
@@ -251,14 +286,12 @@ export function FleetDashboard() {
 
         <div className="grid min-h-0 grid-rows-[1fr_2fr] gap-[3px] bg-black">
           <FleetSection
-            count={entriesBySection.SW_CON.length}
             statusCounts={sectionStatusCounts.SW_CON}
             title={fleetSectionTitles.SW_CON}
           >
             {renderEntries("SW_CON")}
           </FleetSection>
           <FleetSection
-            count={entriesBySection.WEST_CON.length}
             statusCounts={sectionStatusCounts.WEST_CON}
             title={fleetSectionTitles.WEST_CON}
           >
@@ -268,14 +301,12 @@ export function FleetDashboard() {
 
         <FleetSection
           className="relative"
-          count={entriesBySection.SW_MAIN.length}
           statusCounts={sectionStatusCounts.SW_MAIN}
           title={fleetSectionTitles.SW_MAIN}
         >
           {renderEntries("SW_MAIN")}
           <FleetSection
             className="absolute bottom-0 right-0 h-[28%] min-h-44 w-[53%] border-l-[3px] border-t-[3px] border-black"
-            count={entriesBySection.SHOP.length}
             statusCounts={sectionStatusCounts.SHOP}
             title={fleetSectionTitles.SHOP}
           >
