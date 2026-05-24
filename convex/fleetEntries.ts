@@ -2,8 +2,8 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { fleetSectionValidator, fleetStatusValidator } from "./schema";
 
-const cleanOptionalNotes = (notes?: string) => {
-  const trimmed = notes?.trim();
+const cleanOptionalString = (value?: string) => {
+  const trimmed = value?.trim();
   return trimmed ? trimmed : undefined;
 };
 
@@ -17,19 +17,18 @@ export const list = query({
 export const create = mutation({
   args: {
     unitNumber: v.string(),
-    personName: v.string(),
+    personName: v.optional(v.string()),
     section: fleetSectionValidator,
-    notes: v.optional(v.string()),
     status: fleetStatusValidator,
   },
   handler: async (ctx, args) => {
     const now = Date.now();
+    const personName = cleanOptionalString(args.personName);
 
     return await ctx.db.insert("fleetEntries", {
       unitNumber: args.unitNumber.trim(),
-      personName: args.personName.trim(),
+      ...(personName ? { personName } : {}),
       section: args.section,
-      notes: cleanOptionalNotes(args.notes),
       status: args.status,
       createdAt: now,
       updatedAt: now,
@@ -41,17 +40,16 @@ export const update = mutation({
   args: {
     id: v.id("fleetEntries"),
     unitNumber: v.string(),
-    personName: v.string(),
+    personName: v.optional(v.string()),
     section: fleetSectionValidator,
-    notes: v.optional(v.string()),
     status: fleetStatusValidator,
   },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.id, {
       unitNumber: args.unitNumber.trim(),
-      personName: args.personName.trim(),
+      personName: cleanOptionalString(args.personName),
       section: args.section,
-      notes: cleanOptionalNotes(args.notes),
+      notes: undefined,
       status: args.status,
       updatedAt: Date.now(),
     });
