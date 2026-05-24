@@ -13,17 +13,9 @@ const statusTextStyles: Record<
     unitNumber: "text-emerald-700",
     personName: "text-emerald-700",
   },
-  maintenance: {
-    unitNumber: "text-black",
-    personName: "text-zinc-800",
-  },
   backup: {
     unitNumber: "text-black",
     personName: "text-black",
-  },
-  shop: {
-    unitNumber: "text-black",
-    personName: "text-zinc-800",
   },
 };
 

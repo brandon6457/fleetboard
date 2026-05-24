@@ -13,9 +13,7 @@ export const fleetSectionValidator = v.union(
 
 export const fleetStatusValidator = v.union(
   v.literal("active"),
-  v.literal("maintenance"),
   v.literal("backup"),
-  v.literal("shop"),
 );
 
 export default defineSchema({
