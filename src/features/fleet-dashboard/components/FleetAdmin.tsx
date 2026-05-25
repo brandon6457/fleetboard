@@ -9,6 +9,7 @@ import {
   fleetSectionTitles,
   fleetStatuses,
   fleetStatusTitles,
+  isFleetSectionId,
   type FleetSectionId,
   type FleetStatus,
 } from "../data/sections";
@@ -46,7 +47,9 @@ const groupedEntries = (entries: Doc<"fleetEntries">[]) =>
   fleetSections.reduce(
     (groups, section) => ({
       ...groups,
-      [section.id]: entries.filter((entry) => entry.section === section.id),
+      [section.id]: entries.filter(
+        (entry) => isFleetSectionId(entry.section) && entry.section === section.id,
+      ),
     }),
     {} as Record<FleetSectionId, Doc<"fleetEntries">[]>,
   );
@@ -107,7 +110,7 @@ export function FleetAdmin() {
     setForm({
       unitNumber: entry.unitNumber,
       personName: entry.personName ?? "",
-      section: entry.section,
+      section: isFleetSectionId(entry.section) ? entry.section : "SW_CON",
       status: entry.status,
     });
 

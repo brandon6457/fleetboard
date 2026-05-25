@@ -1,7 +1,6 @@
 export const fleetSections = [
   { id: "SRQ_RKL", title: "SRQ/RKL" },
   { id: "TAMPA", title: "TAMPA" },
-  { id: "SRQ_BACKUP", title: "SRQ/BACKUP" },
   { id: "SW_CON", title: "SW CON" },
   { id: "WEST_CON", title: "WEST CON" },
   { id: "SW_MAIN", title: "SW MAIN" },
@@ -9,6 +8,13 @@ export const fleetSections = [
 ] as const;
 
 export type FleetSectionId = (typeof fleetSections)[number]["id"];
+
+const fleetSectionIds = new Set<string>(
+  fleetSections.map((section) => section.id),
+);
+
+export const isFleetSectionId = (sectionId: string): sectionId is FleetSectionId =>
+  fleetSectionIds.has(sectionId);
 
 export const fleetSectionTitles: Record<FleetSectionId, string> =
   fleetSections.reduce(
