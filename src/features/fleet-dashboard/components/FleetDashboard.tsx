@@ -8,7 +8,11 @@ import { CompanyLogo } from "./CompanyLogo";
 import { FleetEntryCard } from "./FleetEntryCard";
 import { FleetSection } from "./FleetSection";
 import type { FleetSectionId } from "../data/sections";
-import { fleetSectionTitles, fleetSections } from "../data/sections";
+import {
+  fleetSectionTitles,
+  fleetSections,
+  isFleetSectionId,
+} from "../data/sections";
 
 type FleetEntriesBySection = Record<FleetSectionId, Doc<"fleetEntries">[]>;
 type SectionStatusCounts = Record<
@@ -121,6 +125,10 @@ export function FleetDashboard() {
     const grouped = emptyEntriesBySection();
 
     for (const entry of entries ?? []) {
+      if (!isFleetSectionId(entry.section)) {
+        continue;
+      }
+
       grouped[entry.section].push(entry);
     }
 
@@ -135,6 +143,10 @@ export function FleetDashboard() {
     const counts = emptySectionStatusCounts();
 
     for (const entry of entries ?? []) {
+      if (!isFleetSectionId(entry.section)) {
+        continue;
+      }
+
       counts[entry.section][entry.status] += 1;
     }
 
@@ -277,27 +289,19 @@ export function FleetDashboard() {
             {renderEntries("TAMPA")}
           </FleetSection>
           <FleetSection
-            statusCounts={sectionStatusCounts.SRQ_BACKUP}
-            title={fleetSectionTitles.SRQ_BACKUP}
-          >
-            {renderEntries("SRQ_BACKUP")}
-          </FleetSection>
-        </div>
-
-        <div className="grid min-h-0 grid-rows-[1fr_2fr] gap-[3px] bg-black">
-          <FleetSection
             statusCounts={sectionStatusCounts.SW_CON}
             title={fleetSectionTitles.SW_CON}
           >
             {renderEntries("SW_CON")}
           </FleetSection>
-          <FleetSection
-            statusCounts={sectionStatusCounts.WEST_CON}
-            title={fleetSectionTitles.WEST_CON}
-          >
-            {renderEntries("WEST_CON")}
-          </FleetSection>
         </div>
+
+        <FleetSection
+          statusCounts={sectionStatusCounts.WEST_CON}
+          title={fleetSectionTitles.WEST_CON}
+        >
+          {renderEntries("WEST_CON")}
+        </FleetSection>
 
         <FleetSection
           className="relative"
