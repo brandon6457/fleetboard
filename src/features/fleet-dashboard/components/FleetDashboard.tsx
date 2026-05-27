@@ -281,7 +281,7 @@ export function FleetDashboard() {
           {renderEntries("SRQ_RKL")}
         </FleetSection>
 
-        <div className="grid min-h-0 grid-rows-[72fr_28fr] gap-[3px] bg-black">
+        <div className="grid min-h-0 grid-rows-[68fr_32fr] gap-[3px] bg-black">
           <FleetSection
             statusCounts={sectionStatusCounts.TAMPA}
             title={fleetSectionTitles.TAMPA}
