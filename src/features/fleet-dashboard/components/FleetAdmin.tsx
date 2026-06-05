@@ -90,13 +90,20 @@ export function FleetAdmin() {
   const [editingId, setEditingId] = useState<Id<"fleetEntries"> | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [adminHighlightedSearchQuery, setAdminHighlightedSearchQuery] =
+    useState("");
   const [searchMessage, setSearchMessage] = useState("");
   const formSectionRef = useRef<HTMLElement>(null);
   const unitNumberInputRef = useRef<HTMLInputElement>(null);
+  const entryRowRefs = useRef<Record<string, HTMLElement | null>>({});
   const isLoadingEntries = entries === undefined;
   const highlightedSearchQuery = highlight?.highlightedSearchQuery ?? "";
+  const adminRowHighlightQuery =
+    adminHighlightedSearchQuery || highlightedSearchQuery;
   const hasHighlight = Boolean(
-    highlightedSearchQuery.trim() || highlight?.highlightedEntryId,
+    adminHighlightedSearchQuery.trim() ||
+      highlightedSearchQuery.trim() ||
+      highlight?.highlightedEntryId,
   );
   const visibleEntries = useMemo(() => {
     const activeEntries: VisibleFleetEntry[] = [];
@@ -193,6 +200,7 @@ export function FleetAdmin() {
 
     if (!normalizedQuery || !entries) {
       setSearchMessage("");
+      setAdminHighlightedSearchQuery("");
       await clearHighlight();
       return;
     }
@@ -203,16 +211,26 @@ export function FleetAdmin() {
 
     if (matches.length === 0) {
       setSearchMessage("No matching entries found");
+      setAdminHighlightedSearchQuery("");
       await clearHighlight();
       return;
     }
 
     setSearchMessage(`${matches.length} matching entries highlighted`);
+    setAdminHighlightedSearchQuery(normalizedQuery);
     await setSearchHighlight({ searchQuery: normalizedQuery });
+
+    window.requestAnimationFrame(() => {
+      entryRowRefs.current[matches[0]._id]?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    });
   };
 
   const handleClearHighlight = async () => {
     setSearchMessage("");
+    setAdminHighlightedSearchQuery("");
     await clearHighlight();
   };
 
@@ -393,11 +411,14 @@ export function FleetAdmin() {
                   entriesBySection[section.id].map((entry) => (
                     <article
                       className={`grid cursor-default gap-3 border-[3px] p-4 outline-none md:grid-cols-[1fr_auto] ${
-                        entryMatchesSearch(entry, highlightedSearchQuery)
+                        entryMatchesSearch(entry, adminRowHighlightQuery)
                           ? "border-yellow-400 bg-yellow-300 text-zinc-950 shadow-[0_0_0_4px_#facc15] hover:bg-yellow-200"
                           : "border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-zinc-400 hover:bg-zinc-800"
                       }`}
                       key={entry._id}
+                      ref={(element) => {
+                        entryRowRefs.current[entry._id] = element;
+                      }}
                     >
                       <div>
                         <p className="text-xl font-black uppercase">
@@ -410,7 +431,7 @@ export function FleetAdmin() {
                         ) : null}
                         <p
                           className={`mt-2 text-sm font-black uppercase ${
-                            entryMatchesSearch(entry, highlightedSearchQuery)
+                            entryMatchesSearch(entry, adminRowHighlightQuery)
                               ? "text-zinc-800"
                               : "text-zinc-400"
                           }`}
