@@ -25,7 +25,13 @@ export function FleetEntryCard({
   isHighlighted = false,
   density = "normal",
 }: FleetEntryCardProps) {
-  const textStyles = statusTextStyles[entry.status];
+  const textStyles =
+    (entry.role ?? "driver") === "manager"
+      ? {
+          unitNumber: "text-red-600",
+          personName: "text-red-600",
+        }
+      : statusTextStyles[entry.status];
   const personName = entry.personName?.trim();
   const isCompact = density === "compact";
 

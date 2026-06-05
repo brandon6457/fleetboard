@@ -1,10 +1,8 @@
 export const fleetSections = [
   { id: "SRQ_RKL", title: "SRQ/RKL" },
   { id: "TAMPA", title: "TAMPA" },
-  { id: "SW_CON", title: "SW CON" },
   { id: "WEST_CON", title: "WEST CON" },
   { id: "SW_MAIN", title: "SW MAIN" },
-  { id: "SHOP", title: "SHOP" },
 ] as const;
 
 export type FleetSectionId = (typeof fleetSections)[number]["id"];
@@ -40,3 +38,20 @@ export const fleetStatusTitles: Record<FleetStatus, string> =
     }),
     {} as Record<FleetStatus, string>,
   );
+
+export const fleetRoles = [
+  { id: "manager", title: "Manager" },
+  { id: "driver", title: "Driver" },
+] as const;
+
+export type FleetRole = (typeof fleetRoles)[number]["id"];
+
+export const defaultFleetRole: FleetRole = "driver";
+
+export const fleetRoleTitles: Record<FleetRole, string> = fleetRoles.reduce(
+  (titles, role) => ({
+    ...titles,
+    [role.id]: role.title,
+  }),
+  {} as Record<FleetRole, string>,
+);

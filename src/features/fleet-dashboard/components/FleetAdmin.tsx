@@ -7,10 +7,14 @@ import type { Doc, Id } from "../../../../convex/_generated/dataModel";
 import {
   fleetSections,
   fleetSectionTitles,
+  fleetRoles,
+  fleetRoleTitles,
   fleetStatuses,
   fleetStatusTitles,
+  defaultFleetRole,
   isFleetSectionId,
   type FleetSectionId,
+  type FleetRole,
   type FleetStatus,
 } from "../data/sections";
 
@@ -18,13 +22,19 @@ type FleetEntryFormState = {
   unitNumber: string;
   personName: string;
   section: FleetSectionId;
+  role: FleetRole;
   status: FleetStatus;
+};
+
+type VisibleFleetEntry = Doc<"fleetEntries"> & {
+  section: FleetSectionId;
 };
 
 const initialFormState: FleetEntryFormState = {
   unitNumber: "",
   personName: "",
   section: "SRQ_RKL",
+  role: defaultFleetRole,
   status: "active",
 };
 
@@ -43,12 +53,13 @@ const secondaryButtonClasses =
 const dangerButtonClasses =
   "cursor-pointer border-[3px] border-red-500 bg-red-500 px-3 py-2 text-sm font-black uppercase text-white outline-none hover:border-red-400 hover:bg-red-400 focus-visible:ring-4 focus-visible:ring-red-500/35";
 
-const groupedEntries = (entries: Doc<"fleetEntries">[]) =>
+const groupedEntries = (entries: VisibleFleetEntry[]) =>
   fleetSections.reduce(
     (groups, section) => ({
       ...groups,
       [section.id]: entries.filter(
-        (entry) => isFleetSectionId(entry.section) && entry.section === section.id,
+        (entry) =>
+          isFleetSectionId(entry.section) && entry.section === section.id,
       ),
     }),
     {} as Record<FleetSectionId, Doc<"fleetEntries">[]>,
@@ -87,10 +98,21 @@ export function FleetAdmin() {
   const hasHighlight = Boolean(
     highlightedSearchQuery.trim() || highlight?.highlightedEntryId,
   );
+  const visibleEntries = useMemo(() => {
+    const activeEntries: VisibleFleetEntry[] = [];
+
+    for (const entry of entries ?? []) {
+      if (isFleetSectionId(entry.section)) {
+        activeEntries.push(entry as VisibleFleetEntry);
+      }
+    }
+
+    return activeEntries;
+  }, [entries]);
 
   const entriesBySection = useMemo(
-    () => groupedEntries(entries ?? []),
-    [entries],
+    () => groupedEntries(visibleEntries),
+    [visibleEntries],
   );
 
   const updateField = <Field extends keyof FleetEntryFormState>(
@@ -110,7 +132,8 @@ export function FleetAdmin() {
     setForm({
       unitNumber: entry.unitNumber,
       personName: entry.personName ?? "",
-      section: isFleetSectionId(entry.section) ? entry.section : "SW_CON",
+      section: isFleetSectionId(entry.section) ? entry.section : "WEST_CON",
+      role: entry.role ?? defaultFleetRole,
       status: entry.status,
     });
 
@@ -132,6 +155,7 @@ export function FleetAdmin() {
       unitNumber: form.unitNumber,
       personName: form.personName || undefined,
       section: form.section,
+      role: form.role,
       status: form.status,
     };
 
@@ -173,7 +197,7 @@ export function FleetAdmin() {
       return;
     }
 
-    const matches = entries.filter((entry) =>
+    const matches = visibleEntries.filter((entry) =>
       entryMatchesSearch(entry, normalizedQuery),
     );
 
@@ -226,7 +250,7 @@ export function FleetAdmin() {
                 {searchMessage ||
                 (isLoadingEntries
                   ? "Loading entries"
-                  : `${entries.length} total entries`)}
+                  : `${visibleEntries.length} total entries`)}
               </p>
               <button
                 className={`${secondaryButtonClasses} text-sm`}
@@ -311,6 +335,28 @@ export function FleetAdmin() {
               </select>
             </label>
 
+            <label className={labelClasses}>
+              Manager or Driver
+              <select
+                className={selectClasses}
+                onChange={(event) =>
+                  updateField("role", event.target.value as FleetRole)
+                }
+                required
+                value={form.role}
+              >
+                {fleetRoles.map((role) => (
+                  <option
+                    className="bg-zinc-950 text-zinc-100"
+                    key={role.id}
+                    value={role.id}
+                  >
+                    {role.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+
             <div className="flex gap-3">
               <button
                 className={`${primaryButtonClasses} flex-1 text-base`}
@@ -369,6 +415,7 @@ export function FleetAdmin() {
                               : "text-zinc-400"
                           }`}
                         >
+                          {fleetRoleTitles[entry.role ?? defaultFleetRole]} |{" "}
                           {fleetStatusTitles[entry.status]}
                         </p>
                       </div>
