@@ -16,6 +16,11 @@ export const fleetStatusValidator = v.union(
   v.literal("backup"),
 );
 
+export const fleetRoleValidator = v.union(
+  v.literal("manager"),
+  v.literal("driver"),
+);
+
 export default defineSchema({
   fleetEntries: defineTable({
     unitNumber: v.string(),
@@ -24,6 +29,7 @@ export default defineSchema({
     // Deprecated: retained until existing documents have been migrated.
     notes: v.optional(v.string()),
     status: fleetStatusValidator,
+    role: v.optional(fleetRoleValidator),
     createdAt: v.number(),
     updatedAt: v.number(),
   })

@@ -15,6 +15,9 @@ import {
 } from "../data/sections";
 
 type FleetEntriesBySection = Record<FleetSectionId, Doc<"fleetEntries">[]>;
+type VisibleFleetEntry = Doc<"fleetEntries"> & {
+  section: FleetSectionId;
+};
 type SectionStatusCounts = Record<
   FleetSectionId,
   {
@@ -45,6 +48,11 @@ const statusSortOrder: Record<Doc<"fleetEntries">["status"], number> = {
   backup: 1,
 };
 
+const roleSortOrder = {
+  manager: 0,
+  driver: 1,
+} as const;
+
 const emptyEntriesBySection = (): FleetEntriesBySection =>
   fleetSections.reduce(
     (grouped, section) => ({
@@ -70,6 +78,21 @@ const sortFleetEntries = (
   firstEntry: Doc<"fleetEntries">,
   secondEntry: Doc<"fleetEntries">,
 ) => {
+  const firstRole = firstEntry.role ?? "driver";
+  const secondRole = secondEntry.role ?? "driver";
+  const roleComparison = roleSortOrder[firstRole] - roleSortOrder[secondRole];
+
+  if (roleComparison !== 0) {
+    return roleComparison;
+  }
+
+  if (firstRole === "manager" && secondRole === "manager") {
+    return unitNumberCollator.compare(
+      firstEntry.unitNumber,
+      secondEntry.unitNumber,
+    );
+  }
+
   const statusComparison =
     statusSortOrder[firstEntry.status] - statusSortOrder[secondEntry.status];
 
@@ -82,8 +105,6 @@ const sortFleetEntries = (
     secondEntry.unitNumber,
   );
 };
-
-const swMainTopGridCount = 52;
 
 const entryMatchesSearch = (entry: Doc<"fleetEntries">, query?: string) => {
   const normalizedQuery = query?.trim().toLowerCase();
@@ -121,14 +142,22 @@ export function FleetDashboard() {
     };
   }, []);
 
+  const visibleEntries = useMemo(() => {
+    const activeEntries: VisibleFleetEntry[] = [];
+
+    for (const entry of entries ?? []) {
+      if (isFleetSectionId(entry.section)) {
+        activeEntries.push(entry as VisibleFleetEntry);
+      }
+    }
+
+    return activeEntries;
+  }, [entries]);
+
   const entriesBySection = useMemo(() => {
     const grouped = emptyEntriesBySection();
 
-    for (const entry of entries ?? []) {
-      if (!isFleetSectionId(entry.section)) {
-        continue;
-      }
-
+    for (const entry of visibleEntries) {
       grouped[entry.section].push(entry);
     }
 
@@ -137,24 +166,20 @@ export function FleetDashboard() {
     }
 
     return grouped;
-  }, [entries]);
+  }, [visibleEntries]);
 
   const sectionStatusCounts = useMemo(() => {
     const counts = emptySectionStatusCounts();
 
-    for (const entry of entries ?? []) {
-      if (!isFleetSectionId(entry.section)) {
-        continue;
-      }
-
+    for (const entry of visibleEntries) {
       counts[entry.section][entry.status] += 1;
     }
 
     return counts;
-  }, [entries]);
+  }, [visibleEntries]);
 
   const isLoadingEntries = entries === undefined;
-  const totalVehicles = entries?.length ?? 0;
+  const totalVehicles = visibleEntries.length;
   const highlightedSearchQuery = highlight?.highlightedSearchQuery;
 
   const toggleFullscreen = async () => {
@@ -176,55 +201,27 @@ export function FleetDashboard() {
     }
 
     if (section === "SW_MAIN") {
-      const topEntries = entriesBySection[section].slice(0, swMainTopGridCount);
-      const lowerEntries = entriesBySection[section].slice(swMainTopGridCount);
-
       return (
-        <div className="h-full overflow-hidden">
-          <div
-            className="grid content-start overflow-hidden"
-            style={{
-              columnGap: "8px",
-              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-              rowGap: "1px",
-            }}
-          >
-            {topEntries.map((entry) => (
-              <div className="min-w-0" key={entry._id}>
-                <FleetEntryCard
-                  density="compact"
-                  entry={entry}
-                  isHighlighted={entryMatchesSearch(
-                    entry,
-                    highlightedSearchQuery,
-                  )}
-                />
-              </div>
-            ))}
-          </div>
-          {lowerEntries.length > 0 ? (
-            <div
-              className="mt-px grid w-[45%] content-start overflow-hidden"
-              style={{
-                columnGap: "8px",
-                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                rowGap: "1px",
-              }}
-            >
-              {lowerEntries.map((entry) => (
-                <div className="min-w-0" key={entry._id}>
-                  <FleetEntryCard
-                    density="compact"
-                    entry={entry}
-                    isHighlighted={entryMatchesSearch(
-                      entry,
-                      highlightedSearchQuery,
-                    )}
-                  />
-                </div>
-              ))}
+        <div
+          className="grid h-full content-start overflow-hidden"
+          style={{
+            columnGap: "8px",
+            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+            rowGap: "1px",
+          }}
+        >
+          {entriesBySection[section].map((entry) => (
+            <div className="min-w-0" key={entry._id}>
+              <FleetEntryCard
+                density="compact"
+                entry={entry}
+                isHighlighted={entryMatchesSearch(
+                  entry,
+                  highlightedSearchQuery,
+                )}
+              />
             </div>
-          ) : null}
+          ))}
         </div>
       );
     }
@@ -281,20 +278,12 @@ export function FleetDashboard() {
           {renderEntries("SRQ_RKL")}
         </FleetSection>
 
-        <div className="grid min-h-0 grid-rows-[68fr_32fr] gap-[3px] bg-black">
-          <FleetSection
-            statusCounts={sectionStatusCounts.TAMPA}
-            title={fleetSectionTitles.TAMPA}
-          >
-            {renderEntries("TAMPA")}
-          </FleetSection>
-          <FleetSection
-            statusCounts={sectionStatusCounts.SW_CON}
-            title={fleetSectionTitles.SW_CON}
-          >
-            {renderEntries("SW_CON")}
-          </FleetSection>
-        </div>
+        <FleetSection
+          statusCounts={sectionStatusCounts.TAMPA}
+          title={fleetSectionTitles.TAMPA}
+        >
+          {renderEntries("TAMPA")}
+        </FleetSection>
 
         <FleetSection
           statusCounts={sectionStatusCounts.WEST_CON}
@@ -304,18 +293,10 @@ export function FleetDashboard() {
         </FleetSection>
 
         <FleetSection
-          className="relative"
           statusCounts={sectionStatusCounts.SW_MAIN}
           title={fleetSectionTitles.SW_MAIN}
         >
           {renderEntries("SW_MAIN")}
-          <FleetSection
-            className="absolute bottom-0 right-0 h-[28%] min-h-44 w-[53%] border-l-[3px] border-t-[3px] border-black"
-            statusCounts={sectionStatusCounts.SHOP}
-            title={fleetSectionTitles.SHOP}
-          >
-            {renderEntries("SHOP")}
-          </FleetSection>
         </FleetSection>
       </div>
     </main>

@@ -1,6 +1,10 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { fleetSectionValidator, fleetStatusValidator } from "./schema";
+import {
+  fleetRoleValidator,
+  fleetSectionValidator,
+  fleetStatusValidator,
+} from "./schema";
 
 const cleanOptionalString = (value?: string) => {
   const trimmed = value?.trim();
@@ -20,6 +24,7 @@ export const create = mutation({
     personName: v.optional(v.string()),
     section: fleetSectionValidator,
     status: fleetStatusValidator,
+    role: v.optional(fleetRoleValidator),
   },
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -30,6 +35,7 @@ export const create = mutation({
       ...(personName ? { personName } : {}),
       section: args.section,
       status: args.status,
+      role: args.role ?? "driver",
       createdAt: now,
       updatedAt: now,
     });
@@ -43,6 +49,7 @@ export const update = mutation({
     personName: v.optional(v.string()),
     section: fleetSectionValidator,
     status: fleetStatusValidator,
+    role: v.optional(fleetRoleValidator),
   },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.id, {
@@ -51,6 +58,7 @@ export const update = mutation({
       section: args.section,
       notes: undefined,
       status: args.status,
+      role: args.role ?? "driver",
       updatedAt: Date.now(),
     });
   },
