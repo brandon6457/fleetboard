@@ -206,7 +206,7 @@ export function FleetDashboard() {
           className="grid h-full content-start overflow-hidden"
           style={{
             columnGap: "8px",
-            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
             rowGap: "1px",
           }}
         >
