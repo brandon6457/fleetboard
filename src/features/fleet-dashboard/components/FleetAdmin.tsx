@@ -77,6 +77,16 @@ const entryMatchesSearch = (entry: Doc<"fleetEntries">, query: string) => {
   );
 };
 
+const saveErrorMessage = (error: unknown) => {
+  const fallback = "Unable to save fleet entry. Please try again.";
+
+  if (!(error instanceof Error)) {
+    return fallback;
+  }
+
+  return error.message.replace(/^Uncaught Error:\s*/, "").trim() || fallback;
+};
+
 export function FleetAdmin() {
   const entries = useQuery(api.fleetEntries.list);
   const highlight = useQuery(api.kioskHighlight.get);
@@ -89,6 +99,7 @@ export function FleetAdmin() {
   const [form, setForm] = useState<FleetEntryFormState>(initialFormState);
   const [editingId, setEditingId] = useState<Id<"fleetEntries"> | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [formError, setFormError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [adminHighlightedSearchQuery, setAdminHighlightedSearchQuery] =
     useState("");
@@ -126,16 +137,19 @@ export function FleetAdmin() {
     field: Field,
     value: FleetEntryFormState[Field],
   ) => {
+    setFormError("");
     setForm((current) => ({ ...current, [field]: value }));
   };
 
   const resetForm = () => {
     setForm(initialFormState);
     setEditingId(null);
+    setFormError("");
   };
 
   const startEditing = (entry: Doc<"fleetEntries">) => {
     setEditingId(entry._id);
+    setFormError("");
     setForm({
       unitNumber: entry.unitNumber,
       personName: entry.personName ?? "",
@@ -157,6 +171,7 @@ export function FleetAdmin() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSaving(true);
+    setFormError("");
 
     const payload = {
       unitNumber: form.unitNumber,
@@ -173,6 +188,8 @@ export function FleetAdmin() {
         await createEntry(payload);
       }
       resetForm();
+    } catch (error) {
+      setFormError(saveErrorMessage(error));
     } finally {
       setIsSaving(false);
     }
@@ -287,6 +304,12 @@ export function FleetAdmin() {
             Fleet Admin
           </h1>
           <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
+            {formError ? (
+              <div className="whitespace-pre-line border-[3px] border-red-400 bg-red-950 px-4 py-3 text-sm font-black uppercase leading-relaxed text-red-100">
+                {formError}
+              </div>
+            ) : null}
+
             <label className={labelClasses}>
               Unit Number
               <input

@@ -1,5 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
+import type { MutationCtx } from "./_generated/server";
 import {
   fleetRoleValidator,
   fleetSectionValidator,
@@ -9,6 +11,27 @@ import {
 const cleanOptionalString = (value?: string) => {
   const trimmed = value?.trim();
   return trimmed ? trimmed : undefined;
+};
+
+const normalizeUnitNumber = (unitNumber: string) =>
+  unitNumber.trim().toLowerCase();
+
+const duplicateVehicleMessage = (unitNumber: string) =>
+  `Vehicle ${unitNumber} already exists.\nPlease edit the existing entry instead of creating a duplicate.`;
+
+const findDuplicateVehicle = async (
+  ctx: MutationCtx,
+  unitNumber: string,
+  excludeId?: Id<"fleetEntries">,
+) => {
+  const normalizedUnitNumber = normalizeUnitNumber(unitNumber);
+  const entries = await ctx.db.query("fleetEntries").collect();
+
+  return entries.find(
+    (entry) =>
+      entry._id !== excludeId &&
+      normalizeUnitNumber(entry.unitNumber) === normalizedUnitNumber,
+  );
 };
 
 export const list = query({
@@ -28,10 +51,20 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     const now = Date.now();
+    const unitNumber = args.unitNumber.trim();
     const personName = cleanOptionalString(args.personName);
 
+    if (!unitNumber) {
+      throw new Error("Vehicle number is required.");
+    }
+
+    const duplicate = await findDuplicateVehicle(ctx, unitNumber);
+    if (duplicate) {
+      throw new Error(duplicateVehicleMessage(unitNumber));
+    }
+
     return await ctx.db.insert("fleetEntries", {
-      unitNumber: args.unitNumber.trim(),
+      unitNumber,
       ...(personName ? { personName } : {}),
       section: args.section,
       status: args.status,
@@ -52,8 +85,29 @@ export const update = mutation({
     role: v.optional(fleetRoleValidator),
   },
   handler: async (ctx, args) => {
+    const unitNumber = args.unitNumber.trim();
+
+    if (!unitNumber) {
+      throw new Error("Vehicle number is required.");
+    }
+
+    const existingEntry = await ctx.db.get(args.id);
+    if (!existingEntry) {
+      throw new Error("Fleet entry not found.");
+    }
+
+    if (
+      normalizeUnitNumber(existingEntry.unitNumber) !==
+      normalizeUnitNumber(unitNumber)
+    ) {
+      const duplicate = await findDuplicateVehicle(ctx, unitNumber, args.id);
+      if (duplicate) {
+        throw new Error(duplicateVehicleMessage(unitNumber));
+      }
+    }
+
     await ctx.db.patch(args.id, {
-      unitNumber: args.unitNumber.trim(),
+      unitNumber,
       personName: cleanOptionalString(args.personName),
       section: args.section,
       notes: undefined,
