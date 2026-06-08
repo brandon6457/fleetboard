@@ -1,8 +1,15 @@
-export const fleetSections = [
+export const kioskFleetSections = [
   { id: "SRQ_RKL", title: "SRQ/RKL" },
   { id: "TAMPA", title: "TAMPA" },
   { id: "WEST_CON", title: "WEST CON" },
   { id: "SW_MAIN", title: "SW MAIN" },
+] as const;
+
+export type KioskFleetSectionId = (typeof kioskFleetSections)[number]["id"];
+
+export const fleetSections = [
+  ...kioskFleetSections,
+  { id: "SW_CON", title: "SW CON" },
 ] as const;
 
 export type FleetSectionId = (typeof fleetSections)[number]["id"];

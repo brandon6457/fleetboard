@@ -25,8 +25,14 @@ export function FleetEntryCard({
   isHighlighted = false,
   density = "normal",
 }: FleetEntryCardProps) {
+  const isSwConEntry = entry.section === "SW_CON";
   const textStyles =
-    (entry.role ?? "driver") === "manager"
+    isSwConEntry
+      ? {
+          unitNumber: "text-blue-700",
+          personName: "text-blue-700",
+        }
+      : (entry.role ?? "driver") === "manager"
       ? {
           unitNumber: "text-red-600",
           personName: "text-red-600",
