@@ -91,6 +91,14 @@ const sortFleetEntries = (
       return firstIsSwCon ? 1 : -1;
     }
 
+    const firstRole = firstEntry.role ?? "driver";
+    const secondRole = secondEntry.role ?? "driver";
+    const roleComparison = roleSortOrder[firstRole] - roleSortOrder[secondRole];
+
+    if (roleComparison !== 0) {
+      return roleComparison;
+    }
+
     return unitNumberCollator.compare(
       firstEntry.unitNumber,
       secondEntry.unitNumber,
