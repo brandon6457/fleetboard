@@ -7,19 +7,19 @@ import type { Doc } from "../../../../convex/_generated/dataModel";
 import { CompanyLogo } from "./CompanyLogo";
 import { FleetEntryCard } from "./FleetEntryCard";
 import { FleetSection } from "./FleetSection";
-import type { FleetSectionId } from "../data/sections";
+import type { FleetSectionId, KioskFleetSectionId } from "../data/sections";
 import {
   fleetSectionTitles,
-  fleetSections,
   isFleetSectionId,
+  kioskFleetSections,
 } from "../data/sections";
 
-type FleetEntriesBySection = Record<FleetSectionId, Doc<"fleetEntries">[]>;
 type VisibleFleetEntry = Doc<"fleetEntries"> & {
   section: FleetSectionId;
 };
+type FleetEntriesBySection = Record<KioskFleetSectionId, VisibleFleetEntry[]>;
 type SectionStatusCounts = Record<
-  FleetSectionId,
+  KioskFleetSectionId,
   {
     active: number;
     backup: number;
@@ -54,7 +54,7 @@ const roleSortOrder = {
 } as const;
 
 const emptyEntriesBySection = (): FleetEntriesBySection =>
-  fleetSections.reduce(
+  kioskFleetSections.reduce(
     (grouped, section) => ({
       ...grouped,
       [section.id]: [],
@@ -63,7 +63,7 @@ const emptyEntriesBySection = (): FleetEntriesBySection =>
   );
 
 const emptySectionStatusCounts = (): SectionStatusCounts =>
-  fleetSections.reduce(
+  kioskFleetSections.reduce(
     (counts, section) => ({
       ...counts,
       [section.id]: {
@@ -74,10 +74,29 @@ const emptySectionStatusCounts = (): SectionStatusCounts =>
     {} as SectionStatusCounts,
   );
 
+const dashboardSectionForEntry = (
+  entry: VisibleFleetEntry,
+): KioskFleetSectionId =>
+  entry.section === "SW_CON" ? "SW_MAIN" : entry.section;
+
 const sortFleetEntries = (
   firstEntry: Doc<"fleetEntries">,
   secondEntry: Doc<"fleetEntries">,
 ) => {
+  const firstIsSwCon = firstEntry.section === "SW_CON";
+  const secondIsSwCon = secondEntry.section === "SW_CON";
+
+  if (firstIsSwCon || secondIsSwCon) {
+    if (firstIsSwCon !== secondIsSwCon) {
+      return firstIsSwCon ? 1 : -1;
+    }
+
+    return unitNumberCollator.compare(
+      firstEntry.unitNumber,
+      secondEntry.unitNumber,
+    );
+  }
+
   const firstRole = firstEntry.role ?? "driver";
   const secondRole = secondEntry.role ?? "driver";
   const roleComparison = roleSortOrder[firstRole] - roleSortOrder[secondRole];
@@ -158,10 +177,10 @@ export function FleetDashboard() {
     const grouped = emptyEntriesBySection();
 
     for (const entry of visibleEntries) {
-      grouped[entry.section].push(entry);
+      grouped[dashboardSectionForEntry(entry)].push(entry);
     }
 
-    for (const section of fleetSections) {
+    for (const section of kioskFleetSections) {
       grouped[section.id].sort(sortFleetEntries);
     }
 
@@ -172,7 +191,7 @@ export function FleetDashboard() {
     const counts = emptySectionStatusCounts();
 
     for (const entry of visibleEntries) {
-      counts[entry.section][entry.status] += 1;
+      counts[dashboardSectionForEntry(entry)][entry.status] += 1;
     }
 
     return counts;
@@ -191,7 +210,7 @@ export function FleetDashboard() {
     await document.documentElement.requestFullscreen();
   };
 
-  const renderEntries = (section: FleetSectionId) => {
+  const renderEntries = (section: KioskFleetSectionId) => {
     if (isLoadingEntries) {
       return (
         <p className="border-[3px] border-dashed border-zinc-300 p-3 text-center text-sm font-black uppercase text-zinc-500">

@@ -4,11 +4,9 @@ import { v } from "convex/values";
 export const fleetSectionValidator = v.union(
   v.literal("SRQ_RKL"),
   v.literal("TAMPA"),
-  v.literal("SRQ_BACKUP"),
   v.literal("SW_CON"),
   v.literal("WEST_CON"),
   v.literal("SW_MAIN"),
-  v.literal("SHOP"),
 );
 
 export const fleetStatusValidator = v.union(
