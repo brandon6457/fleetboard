@@ -321,7 +321,7 @@ export function FleetDashboard() {
 
         <FleetSection
           statusCounts={sectionStatusCounts.SW_MAIN}
-          title={fleetSectionTitles.SW_MAIN}
+          title="SW MAIN/CON"
         >
           {renderEntries("SW_MAIN")}
         </FleetSection>
