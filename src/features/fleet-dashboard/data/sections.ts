@@ -9,7 +9,6 @@ export type KioskFleetSectionId = (typeof kioskFleetSections)[number]["id"];
 
 export const fleetSections = [
   ...kioskFleetSections,
-  { id: "SHOP", title: "SHOP" },
   { id: "SW_CON", title: "SW CON" },
 ] as const;
 
