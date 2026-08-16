@@ -6,6 +6,7 @@ import { api } from "../../../../convex/_generated/api";
 import type { Doc } from "../../../../convex/_generated/dataModel";
 import { CompanyLogo } from "./CompanyLogo";
 import { FleetEntryCard } from "./FleetEntryCard";
+import type { FleetEntrySize } from "./FleetEntryCard";
 import { FleetSection } from "./FleetSection";
 import type { FleetSectionId, KioskFleetSectionId } from "../data/sections";
 import {
@@ -16,6 +17,9 @@ import {
 
 type VisibleFleetEntry = Doc<"fleetEntries"> & {
   section: FleetSectionId;
+};
+type DashboardFleetEntry = VisibleFleetEntry & {
+  section: KioskFleetSectionId | "SW_CON";
 };
 type FleetEntriesBySection = Record<KioskFleetSectionId, VisibleFleetEntry[]>;
 type SectionStatusCounts = Record<
@@ -75,9 +79,38 @@ const emptySectionStatusCounts = (): SectionStatusCounts =>
   );
 
 const dashboardSectionForEntry = (
-  entry: VisibleFleetEntry,
+  entry: DashboardFleetEntry,
 ): KioskFleetSectionId =>
   entry.section === "SW_CON" ? "SW_MAIN" : entry.section;
+
+const isDashboardFleetEntry = (
+  entry: VisibleFleetEntry,
+): entry is DashboardFleetEntry =>
+  entry.section === "SW_CON" ||
+  kioskFleetSections.some((section) => section.id === entry.section);
+
+const entrySizeForCount = (entryCount: number): FleetEntrySize => {
+  if (entryCount > 50) {
+    return "minimum";
+  }
+
+  if (entryCount > 30) {
+    return "small";
+  }
+
+  if (entryCount > 15) {
+    return "medium";
+  }
+
+  return "large";
+};
+
+const entryGapForSize: Record<FleetEntrySize, string> = {
+  large: "gap-0.5",
+  medium: "gap-px",
+  small: "gap-0",
+  minimum: "gap-0",
+};
 
 const sortFleetEntries = (
   firstEntry: Doc<"fleetEntries">,
@@ -181,10 +214,15 @@ export function FleetDashboard() {
     return activeEntries;
   }, [entries]);
 
+  const dashboardEntries = useMemo(
+    () => visibleEntries.filter(isDashboardFleetEntry),
+    [visibleEntries],
+  );
+
   const entriesBySection = useMemo(() => {
     const grouped = emptyEntriesBySection();
 
-    for (const entry of visibleEntries) {
+    for (const entry of dashboardEntries) {
       grouped[dashboardSectionForEntry(entry)].push(entry);
     }
 
@@ -193,17 +231,17 @@ export function FleetDashboard() {
     }
 
     return grouped;
-  }, [visibleEntries]);
+  }, [dashboardEntries]);
 
   const sectionStatusCounts = useMemo(() => {
     const counts = emptySectionStatusCounts();
 
-    for (const entry of visibleEntries) {
+    for (const entry of dashboardEntries) {
       counts[dashboardSectionForEntry(entry)][entry.status] += 1;
     }
 
     return counts;
-  }, [visibleEntries]);
+  }, [dashboardEntries]);
 
   const isLoadingEntries = entries === undefined;
   const totalVehicles = visibleEntries.length;
@@ -219,6 +257,8 @@ export function FleetDashboard() {
   };
 
   const renderEntries = (section: KioskFleetSectionId) => {
+    const entrySize = entrySizeForCount(entriesBySection[section].length);
+
     if (isLoadingEntries) {
       return (
         <p className="border-[3px] border-dashed border-zinc-300 p-3 text-center text-sm font-black uppercase text-zinc-500">
@@ -234,18 +274,18 @@ export function FleetDashboard() {
           style={{
             columnGap: "8px",
             gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-            rowGap: "1px",
+            rowGap: entrySize === "large" ? "1px" : "0px",
           }}
         >
           {entriesBySection[section].map((entry) => (
             <div className="min-w-0" key={entry._id}>
               <FleetEntryCard
-                density="compact"
                 entry={entry}
                 isHighlighted={entryMatchesSearch(
                   entry,
                   highlightedSearchQuery,
                 )}
+                size={entrySize}
               />
             </div>
           ))}
@@ -254,12 +294,13 @@ export function FleetDashboard() {
     }
 
     return (
-      <div className="grid content-start gap-1">
+      <div className={`grid content-start overflow-hidden ${entryGapForSize[entrySize]}`}>
         {entriesBySection[section].map((entry) => (
           <FleetEntryCard
             entry={entry}
             isHighlighted={entryMatchesSearch(entry, highlightedSearchQuery)}
             key={entry._id}
+            size={entrySize}
           />
         ))}
       </div>
@@ -321,7 +362,7 @@ export function FleetDashboard() {
 
         <FleetSection
           statusCounts={sectionStatusCounts.SW_MAIN}
-          title={fleetSectionTitles.SW_MAIN}
+          title="SW MAIN/CON"
         >
           {renderEntries("SW_MAIN")}
         </FleetSection>
