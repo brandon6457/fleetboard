@@ -7,6 +7,7 @@ export const fleetSectionValidator = v.union(
   v.literal("SW_CON"),
   v.literal("WEST_CON"),
   v.literal("SW_MAIN"),
+  v.literal("SHOP"),
 );
 
 export const fleetStatusValidator = v.union(

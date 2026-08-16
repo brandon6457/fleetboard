@@ -1,5 +1,5 @@
 export const kioskFleetSections = [
-  { id: "SRQ_RKL", title: "SRQ/RKL" },
+  { id: "SRQ_RKL", title: "SRQ" },
   { id: "TAMPA", title: "TAMPA" },
   { id: "WEST_CON", title: "WEST CON" },
   { id: "SW_MAIN", title: "SW MAIN" },
@@ -9,6 +9,7 @@ export type KioskFleetSectionId = (typeof kioskFleetSections)[number]["id"];
 
 export const fleetSections = [
   ...kioskFleetSections,
+  { id: "SHOP", title: "SHOP" },
   { id: "SW_CON", title: "SW CON" },
 ] as const;
 
